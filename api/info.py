@@ -15,15 +15,6 @@ def _cookiefile():
     return path
 
 
-def _cookie_debug():
-    raw = os.environ.get("YT_COOKIES")
-    if not raw:
-        return "YT_COOKIES não está definida no servidor"
-    lines = [l for l in raw.splitlines() if l.strip() and not l.startswith("#")]
-    tabbed = sum(1 for l in lines if "\t" in l)
-    return f"YT_COOKIES presente ({len(raw)} chars, {len(lines)} linhas de cookie, {tabbed} com tabs)"
-
-
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0) or 0)
@@ -58,7 +49,7 @@ class handler(BaseHTTPRequestHandler):
                 {
                     "error": "Não foi possível obter informações deste vídeo. "
                     "Ele pode ser privado, restrito por idade ou indisponível.",
-                    "detail": f"{e} | {_cookie_debug()}",
+                    "detail": str(e),
                 },
             )
             return
@@ -66,71 +57,12 @@ class handler(BaseHTTPRequestHandler):
         duration_s = info.get("duration") or 0
         duration = f"{int(duration_s // 60)}:{int(duration_s % 60):02d}"
 
-        all_formats = info.get("formats", [])
-
-        # Vídeo (combinado ou só vídeo - nesse caso o /api/download junta com o
-        # melhor áudio usando ffmpeg na hora de baixar).
-        usable = [f for f in all_formats if f.get("vcodec") not in (None, "none") and f.get("height")]
-        usable.sort(key=lambda f: f.get("height"), reverse=True)
-
-        formats = []
-        seen_heights = set()
-        for f in usable:
-            h = f.get("height")
-            if h in seen_heights:
-                continue
-            seen_heights.add(h)
-            formats.append(
-                {
-                    "format_id": f["format_id"],
-                    "qualityLabel": f"{h}p",
-                    "container": f.get("ext"),
-                    "filesize": f.get("filesize") or f.get("filesize_approx"),
-                }
-            )
-            if len(formats) >= 6:
-                break
-
-        audio_only = [
-            f
-            for f in all_formats
-            if f.get("vcodec") in (None, "none") and f.get("acodec") not in (None, "none")
-        ]
-        audio_only.sort(key=lambda f: f.get("abr") or 0, reverse=True)
-        if audio_only:
-            f = audio_only[0]
-            formats.append(
-                {
-                    "format_id": f["format_id"],
-                    "audioBitrate": f.get("abr"),
-                    "container": f.get("ext"),
-                    "filesize": f.get("filesize") or f.get("filesize_approx"),
-                }
-            )
-
         self._send_json(
             200,
             {
                 "title": info.get("title"),
                 "thumbnail": info.get("thumbnail"),
                 "duration": duration,
-                "formats": formats,
-                "debug": {
-                    "ytdlp_version": yt_dlp.version.__version__,
-                    "raw_format_count": len(all_formats),
-                    "raw_format_sample": [
-                        {
-                            "id": f.get("format_id"),
-                            "ext": f.get("ext"),
-                            "vcodec": f.get("vcodec"),
-                            "acodec": f.get("acodec"),
-                            "height": f.get("height"),
-                            "has_url": bool(f.get("url")),
-                        }
-                        for f in all_formats[:30]
-                    ],
-                    "cookie_debug": _cookie_debug(),
-                },
             },
         )
 

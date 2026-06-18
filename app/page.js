@@ -2,18 +2,11 @@
 
 import { useState } from "react";
 
-function formatSize(bytes) {
-  if (!bytes) return "";
-  const mb = bytes / (1024 * 1024);
-  return `${mb.toFixed(1)} MB`;
-}
-
 export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [video, setVideo] = useState(null);
-  const [selectedFormat, setSelectedFormat] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -39,7 +32,6 @@ export default function Home() {
       }
 
       setVideo(data);
-      setSelectedFormat(data.formats?.[0]?.format_id || "");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -74,28 +66,12 @@ export default function Home() {
           <div className="video-title">{video.title}</div>
           <div className="video-meta">Duração: {video.duration}</div>
 
-          <div className="download-row">
-            <select
-              value={selectedFormat}
-              onChange={(e) => setSelectedFormat(e.target.value)}
-            >
-              {video.formats.map((f) => (
-                <option key={f.format_id} value={f.format_id}>
-                  {f.qualityLabel || Math.round(f.audioBitrate || 0) + " kbps"} ·{" "}
-                  {f.container}
-                  {f.filesize ? ` · ${formatSize(f.filesize)}` : ""}
-                </option>
-              ))}
-            </select>
-            <a
-              className="download-btn"
-              href={`/api/download?url=${encodeURIComponent(
-                url
-              )}&format_id=${selectedFormat}`}
-            >
-              Baixar
-            </a>
-          </div>
+          <a
+            className="download-btn download-btn-full"
+            href={`/api/download?url=${encodeURIComponent(url)}`}
+          >
+            Baixar (melhor qualidade)
+          </a>
         </div>
       )}
 

@@ -97,21 +97,6 @@ button:hover:not(:disabled) {
   margin-bottom: 16px;
 }
 
-.download-row {
-  display: flex;
-  gap: 8px;
-}
-
-.download-row select {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-  background: #fff;
-  color: #1f1c2c;
-}
-
 .download-btn {
   background: #4caf50;
   color: #fff;
@@ -122,24 +107,17 @@ button:hover:not(:disabled) {
   font-size: 14px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .download-btn:hover {
   background: #43a047;
 }
 
-.format-row a {
-  background: #4caf50;
-  color: #fff;
-  text-decoration: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.format-row a:hover {
-  background: #43a047;
+.download-btn-full {
+  margin-top: 4px;
+  padding: 14px 20px;
+  font-size: 15px;
 }
 
 .disclaimer {
