@@ -15,6 +15,15 @@ def _cookiefile():
     return path
 
 
+def _cookie_debug():
+    raw = os.environ.get("YT_COOKIES")
+    if not raw:
+        return "YT_COOKIES não está definida no servidor"
+    lines = [l for l in raw.splitlines() if l.strip() and not l.startswith("#")]
+    tabbed = sum(1 for l in lines if "\t" in l)
+    return f"YT_COOKIES presente ({len(raw)} chars, {len(lines)} linhas de cookie, {tabbed} com tabs)"
+
+
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0) or 0)
@@ -48,7 +57,7 @@ class handler(BaseHTTPRequestHandler):
                 {
                     "error": "Não foi possível obter informações deste vídeo. "
                     "Ele pode ser privado, restrito por idade ou indisponível.",
-                    "detail": str(e),
+                    "detail": f"{e} | {_cookie_debug()}",
                 },
             )
             return
