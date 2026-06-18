@@ -44,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
             "quiet": True,
             "no_warnings": True,
             "skip_download": True,
-            "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+            "extractor_args": {"youtube": {"player_client": ["android_vr"]}},
             "cookiefile": _cookiefile(),
             "ignore_no_formats_error": True,
         }
@@ -68,16 +68,14 @@ class handler(BaseHTTPRequestHandler):
 
         all_formats = info.get("formats", [])
 
-        combined = [
-            f
-            for f in all_formats
-            if f.get("vcodec") not in (None, "none") and f.get("acodec") not in (None, "none")
-        ]
-        combined.sort(key=lambda f: (f.get("ext") != "mp4", -(f.get("height") or 0)))
+        # Vídeo (combinado ou só vídeo - nesse caso o /api/download junta com o
+        # melhor áudio usando ffmpeg na hora de baixar).
+        usable = [f for f in all_formats if f.get("vcodec") not in (None, "none") and f.get("height")]
+        usable.sort(key=lambda f: f.get("height"), reverse=True)
 
         formats = []
         seen_heights = set()
-        for f in combined:
+        for f in usable:
             h = f.get("height")
             if h in seen_heights:
                 continue
@@ -85,40 +83,13 @@ class handler(BaseHTTPRequestHandler):
             formats.append(
                 {
                     "format_id": f["format_id"],
-                    "qualityLabel": f"{h}p" if h else f.get("format_note", ""),
+                    "qualityLabel": f"{h}p",
                     "container": f.get("ext"),
                     "filesize": f.get("filesize") or f.get("filesize_approx"),
                 }
             )
             if len(formats) >= 6:
                 break
-
-        if not formats:
-            # Vídeo sem formato combinado (comum em uploads recentes): oferece
-            # vídeo sem áudio como alternativa, já que não há ffmpeg no servidor
-            # para juntar os streams separados.
-            video_only = [
-                f
-                for f in all_formats
-                if f.get("vcodec") not in (None, "none") and f.get("acodec") in (None, "none")
-            ]
-            video_only.sort(key=lambda f: f.get("height") or 0, reverse=True)
-            seen_heights = set()
-            for f in video_only:
-                h = f.get("height")
-                if h in seen_heights:
-                    continue
-                seen_heights.add(h)
-                formats.append(
-                    {
-                        "format_id": f["format_id"],
-                        "qualityLabel": f"{h}p (sem áudio)" if h else f.get("format_note", ""),
-                        "container": f.get("ext"),
-                        "filesize": f.get("filesize") or f.get("filesize_approx"),
-                    }
-                )
-                if len(formats) >= 4:
-                    break
 
         audio_only = [
             f

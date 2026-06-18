@@ -13,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [video, setVideo] = useState(null);
+  const [selectedFormat, setSelectedFormat] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function Home() {
       }
 
       setVideo(data);
+      setSelectedFormat(data.formats?.[0]?.format_id || "");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,23 +74,27 @@ export default function Home() {
           <div className="video-title">{video.title}</div>
           <div className="video-meta">Duração: {video.duration}</div>
 
-          <div className="formats">
-            {video.formats.map((f) => (
-              <div className="format-row" key={f.format_id}>
-                <span>
+          <div className="download-row">
+            <select
+              value={selectedFormat}
+              onChange={(e) => setSelectedFormat(e.target.value)}
+            >
+              {video.formats.map((f) => (
+                <option key={f.format_id} value={f.format_id}>
                   {f.qualityLabel || Math.round(f.audioBitrate || 0) + " kbps"} ·{" "}
                   {f.container}
                   {f.filesize ? ` · ${formatSize(f.filesize)}` : ""}
-                </span>
-                <a
-                  href={`/api/download?url=${encodeURIComponent(
-                    url
-                  )}&format_id=${f.format_id}`}
-                >
-                  Baixar
-                </a>
-              </div>
-            ))}
+                </option>
+              ))}
+            </select>
+            <a
+              className="download-btn"
+              href={`/api/download?url=${encodeURIComponent(
+                url
+              )}&format_id=${selectedFormat}`}
+            >
+              Baixar
+            </a>
           </div>
         </div>
       )}

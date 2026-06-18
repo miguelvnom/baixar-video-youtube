@@ -97,20 +97,35 @@ button:hover:not(:disabled) {
   margin-bottom: 16px;
 }
 
-.formats {
+.download-row {
   display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.format-row {
+.download-row select {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+.download-btn {
+  background: #4caf50;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 14px;
+}
+
+.download-btn:hover {
+  background: #43a047;
 }
 
 .format-row a {
