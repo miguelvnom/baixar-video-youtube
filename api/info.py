@@ -115,6 +115,22 @@ class handler(BaseHTTPRequestHandler):
                 "thumbnail": info.get("thumbnail"),
                 "duration": duration,
                 "formats": formats,
+                "debug": {
+                    "ytdlp_version": yt_dlp.version.__version__,
+                    "raw_format_count": len(all_formats),
+                    "raw_format_sample": [
+                        {
+                            "id": f.get("format_id"),
+                            "ext": f.get("ext"),
+                            "vcodec": f.get("vcodec"),
+                            "acodec": f.get("acodec"),
+                            "height": f.get("height"),
+                            "has_url": bool(f.get("url")),
+                        }
+                        for f in all_formats[:30]
+                    ],
+                    "cookie_debug": _cookie_debug(),
+                },
             },
         )
 
