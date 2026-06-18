@@ -1,3 +1,5 @@
+import "./globals.css";
+
 export const metadata = {
   title: "Baixar Vídeo do YouTube",
   description: "Ferramenta simples para baixar vídeos do YouTube",
