@@ -68,18 +68,16 @@ class handler(BaseHTTPRequestHandler):
 
         all_formats = info.get("formats", [])
 
-        progressive = [
+        combined = [
             f
             for f in all_formats
-            if f.get("vcodec") not in (None, "none")
-            and f.get("acodec") not in (None, "none")
-            and f.get("ext") == "mp4"
+            if f.get("vcodec") not in (None, "none") and f.get("acodec") not in (None, "none")
         ]
-        progressive.sort(key=lambda f: f.get("height") or 0, reverse=True)
+        combined.sort(key=lambda f: (f.get("ext") != "mp4", -(f.get("height") or 0)))
 
         formats = []
         seen_heights = set()
-        for f in progressive:
+        for f in combined:
             h = f.get("height")
             if h in seen_heights:
                 continue
@@ -94,6 +92,33 @@ class handler(BaseHTTPRequestHandler):
             )
             if len(formats) >= 6:
                 break
+
+        if not formats:
+            # Vídeo sem formato combinado (comum em uploads recentes): oferece
+            # vídeo sem áudio como alternativa, já que não há ffmpeg no servidor
+            # para juntar os streams separados.
+            video_only = [
+                f
+                for f in all_formats
+                if f.get("vcodec") not in (None, "none") and f.get("acodec") in (None, "none")
+            ]
+            video_only.sort(key=lambda f: f.get("height") or 0, reverse=True)
+            seen_heights = set()
+            for f in video_only:
+                h = f.get("height")
+                if h in seen_heights:
+                    continue
+                seen_heights.add(h)
+                formats.append(
+                    {
+                        "format_id": f["format_id"],
+                        "qualityLabel": f"{h}p (sem áudio)" if h else f.get("format_note", ""),
+                        "container": f.get("ext"),
+                        "filesize": f.get("filesize") or f.get("filesize_approx"),
+                    }
+                )
+                if len(formats) >= 4:
+                    break
 
         audio_only = [
             f
