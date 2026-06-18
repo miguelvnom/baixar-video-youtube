@@ -108,8 +108,8 @@ button:hover:not(:disabled) {
   border-radius: 8px;
   border: none;
   font-size: 14px;
-  background: rgba(0, 0, 0, 0.2);
-  color: #fff;
+  background: #fff;
+  color: #1f1c2c;
 }
 
 .download-btn {
