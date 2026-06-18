@@ -46,6 +46,7 @@ class handler(BaseHTTPRequestHandler):
             "skip_download": True,
             "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
             "cookiefile": _cookiefile(),
+            "ignore_no_formats_error": True,
         }
 
         try:
