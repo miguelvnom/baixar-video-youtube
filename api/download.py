@@ -20,13 +20,14 @@ class handler(BaseHTTPRequestHandler):
             "no_warnings": True,
             "skip_download": True,
             "format": format_id,
+            "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
         }
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-        except Exception:
-            self._send_text(500, "Falha ao processar o vídeo.")
+        except Exception as e:
+            self._send_text(500, f"Falha ao processar o vídeo: {e}")
             return
 
         direct_url = info.get("url")

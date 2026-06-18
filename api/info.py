@@ -23,17 +23,19 @@ class handler(BaseHTTPRequestHandler):
             "quiet": True,
             "no_warnings": True,
             "skip_download": True,
+            "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
         }
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-        except Exception:
+        except Exception as e:
             self._send_json(
                 500,
                 {
                     "error": "Não foi possível obter informações deste vídeo. "
-                    "Ele pode ser privado, restrito por idade ou indisponível."
+                    "Ele pode ser privado, restrito por idade ou indisponível.",
+                    "detail": str(e),
                 },
             )
             return
