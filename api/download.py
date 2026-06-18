@@ -1,8 +1,20 @@
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, unquote
+import os
 import re
 import requests
 import yt_dlp
+
+
+def _cookiefile():
+    raw = os.environ.get("YT_COOKIES")
+    if not raw:
+        return None
+    path = "/tmp/yt_cookies.txt"
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(raw)
+    return path
 
 
 class handler(BaseHTTPRequestHandler):
@@ -21,6 +33,7 @@ class handler(BaseHTTPRequestHandler):
             "skip_download": True,
             "format": format_id,
             "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+            "cookiefile": _cookiefile(),
         }
 
         try:
