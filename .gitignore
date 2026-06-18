@@ -1,0 +1,9 @@
+node_modules
+.next
+.vercel
+.env*.local
+npm-debug.log*
+__pycache__/
+*.pyc
+*-player-script.js
+.claude/
